@@ -1,18 +1,15 @@
-package com.example.poyectofinalcompose.navigation
+package com.example.poyectofinalcompose.Navigation
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.example.poyectofinalcompose.ui.Screens.DetalleScreen
 import com.example.poyectofinalcompose.ui.Screens.IMCScreen
-import com.example.poyectofinalcompose.ui.Screens.LoginScreen
-import com.example.poyectofinalcompose.ui.Screens.PruebasScreen
-import com.example.poyectofinalcompose.ui.Screens.UserScreen
-import com.example.poyectofinalcompose.ui.Screens.*
+import com.example.poyectofinalcompose.ui.screens.*
 
-    sealed class Screen(val route: String) {
+open class Screen(val route: String) {
     object Login : Screen("login")
     object User : Screen("user")
     object Pruebas : Screen("pruebas")
@@ -24,17 +21,24 @@ import com.example.poyectofinalcompose.ui.Screens.*
 
 @Composable
 fun NavGraph(navController: NavHostController) {
+    var edad by rememberSaveable { mutableStateOf(0) }
+
     NavHost(
         navController = navController,
         startDestination = Screen.Login.route
     ) {
-        composable(Screen.Login.route) { LoginScreen(navController) }
-        composable(Screen.User.route) { UserScreen(navController) }
-        composable(Screen.Pruebas.route) { PruebasScreen(navController) }
-        composable(Screen.Detalle.route) { backStackEntry ->
-            val pruebaId = backStackEntry.arguments?.getString("pruebaId") ?: ""
-            DetalleScreen(pruebaId)
+        composable(Screen.Login.route) {
+            LoginScreen(navController) { edadIngresada ->
+                edad = edadIngresada
+            }
+        }
+        composable(Screen.Pruebas.route) {
+            PruebasScreen(navController, edad)
         }
         composable(Screen.IMC.route) { IMCScreen(navController) }
+        composable(Screen.Detalle.route) { backStackEntry ->
+            val pruebaId = backStackEntry.arguments?.getString("pruebaId") ?: ""
+            DetalleScreen(pruebaId, navController)
+        }
     }
 }

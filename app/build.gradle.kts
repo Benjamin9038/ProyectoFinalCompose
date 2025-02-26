@@ -5,6 +5,8 @@ plugins {
 }
 
 android {
+
+
     namespace = "com.example.poyectofinalcompose"
     compileSdk = 35
 
@@ -65,5 +67,4 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.0")
     debugImplementation("androidx.compose.ui:ui-tooling:1.5.0")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.0")
-
 }
