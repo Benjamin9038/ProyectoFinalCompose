@@ -5,5 +5,6 @@ data class Prueba(
     val nombre: String,
     val categoria: String,
     val descripcion: String,
-    val imagen: String
+    val imagen: Int,
+    val enlace: String
 )
