@@ -1,123 +1,149 @@
 package com.example.poyectofinalcompose.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.example.poyectofinalcompose.Navigation.Screen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-//el onUserDataEntered sirve para mandar los datos ingresado de userScreen a NavGraph
-fun UserScreen(navController: NavController, onUserDataEntered: (Int, Float, Float) -> Unit) {
-    var edad by remember { mutableStateOf("") }
-    var altura by remember { mutableStateOf("") }
-    var peso by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
-    var showIMCDialog by remember { mutableStateOf(false) }
-    var imc by remember { mutableStateOf(0.0) }
+fun UserScreen(onContinue: (Int, String) -> Unit) {
+    //Variables para almacenar los valores ingresados por el usuario
+    var edad by rememberSaveable { mutableStateOf("") }
+    var peso by rememberSaveable { mutableStateOf("") }
+    var altura by rememberSaveable { mutableStateOf("") }
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Datos del Usuario") }) }
-    ) { innerPadding ->
-        Column(
+    //Selección de género sin persistencia de datos
+    var masculino by remember { mutableStateOf(true) } // Por defecto masculino seleccionado
+    var femenino by remember { mutableStateOf(false) }
+
+    //Variables para el cálculo y visualización del IMC
+    var showDialog by remember { mutableStateOf(false) }
+    var imcResultado by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = "Datos del Usuario", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        //Campo para ingresar la edad
+        TextField(
+            value = edad,
+            onValueChange = { edad = it },
+            label = { Text("Edad") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), // Permite solo números
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        //Campo para ingresar el peso en kg
+        TextField(
+            value = peso,
+            onValueChange = { peso = it },
+            label = { Text("Peso (kg)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        //Campo para ingresar la altura en cm
+        TextField(
+            value = altura,
+            onValueChange = { altura = it },
+            label = { Text("Altura (cm)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        //Selección de género
+        Text(text = "Género", style = MaterialTheme.typography.bodyLarge)
+
+        Row(
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Ingrese sus datos para continuar", style = MaterialTheme.typography.titleLarge)
+            Checkbox(checked = masculino, onCheckedChange = {
+                masculino = it
+                femenino = !it // Solo uno puede estar seleccionado a la vez
+            })
+            Text("Masculino")
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
-            // Campo de edad (Obligatorio)
-            OutlinedTextField(
-                value = edad,
-                onValueChange = { edad = it },
-                label = { Text("Edad") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Checkbox(checked = femenino, onCheckedChange = {
+                femenino = it
+                masculino = !it
+            })
+            Text("Femenino")
+        }
 
-            Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de altura (Opcional)
-            OutlinedTextField(
-                value = altura,
-                onValueChange = { altura = it },
-                label = { Text("Altura (m) - Opcional") },
-                modifier = Modifier.fillMaxWidth()
-            )
+        //Botón para calcular el IMC
+        Button(
+            onClick = {
+                val pesoFloat = peso.toFloatOrNull()
+                val alturaFloat = altura.toFloatOrNull()?.div(100) // Convertir cm a metros
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Campo de peso (Opcional)
-            OutlinedTextField(
-                value = peso,
-                onValueChange = { peso = it },
-                label = { Text("Peso (kg) - Opcional") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (errorMessage.isNotEmpty()) {
-                Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            // Botón para calcular IMC (solo si ingresó altura y peso)
-            Button(
-                onClick = {
-                    val pesoNum = peso.toDoubleOrNull() ?: 0.0
-                    val alturaNum = altura.toDoubleOrNull() ?: 0.0
-
-                    if (pesoNum > 0 && alturaNum > 0) {
-                        imc = pesoNum / (alturaNum * alturaNum)
-                        showIMCDialog = true
-                    } else {
-                        errorMessage = "Debe ingresar peso y altura para calcular el IMC"
+                if (pesoFloat != null && alturaFloat != null && alturaFloat > 0) {
+                    val imc = pesoFloat / (alturaFloat * alturaFloat) // Fórmula del IMC
+                    val categoria = when {
+                        imc < 18.5 -> "Bajo peso"
+                        imc in 18.5..24.9 -> "Peso normal"
+                        imc in 25.0..29.9 -> "Sobrepeso"
+                        else -> "Obesidad"
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = peso.isNotEmpty() && altura.isNotEmpty() // Solo se activa si se ingresaron datos
-            ) {
-                Text("Calcular IMC")
-            }
+                    imcResultado = "Tu IMC es: %.2f\nCategoría: $categoria".format(imc)
+                    showDialog = true // Mostrar resultado en un diálogo
+                } else {
+                    imcResultado = "Por favor, introduce un peso y altura válidos."
+                    showDialog = true
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Calcular IMC")
+        }
 
-            Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-            // Botón para continuar a PruebasScreen sin necesidad de peso/altura
-            Button(
-                onClick = {
-                    val edadInt = edad.toIntOrNull()
-                    val alturaFloat = altura.toFloatOrNull() ?: 0f
-                    val pesoFloat = peso.toFloatOrNull() ?: 0f
-
-                    if (edadInt != null) {
-                        onUserDataEntered(edadInt, alturaFloat, pesoFloat)
-                        navController.navigate(Screen.Pruebas.route) //  Navega a PruebasScreen
-                    } else {
-                        errorMessage = "Ingrese una edad válida"
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Continuar")
-            }
+        //Botón para continuar a la siguiente pantalla sin persistencia de datos
+        Button(
+            onClick = {
+                val edadInt = edad.toIntOrNull() ?: 0
+                val genero = if (masculino) "Masculino" else "Femenino"
+                onContinue(edadInt, genero) // Se envían los datos ingresados
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Continuar")
         }
     }
 
-    // AlertDialog para mostrar el IMC
-    if (showIMCDialog) {
+    //Diálogo emergente para mostrar el resultado del IMC
+    if (showDialog) {
         AlertDialog(
-            onDismissRequest = { showIMCDialog = false },//OnDismiss es para cerrar el dialogo
+            onDismissRequest = { showDialog = false },
             title = { Text("Resultado del IMC") },
-            text = { Text("Tu IMC es: ${"%.2f".format(imc)}") },
+            text = { Text(imcResultado) },
             confirmButton = {
-                Button(onClick = { showIMCDialog = false }) {
-                    Text("Aceptar")
+                Button(onClick = { showDialog = false }) {
+                    Text("Cerrar")
                 }
             }
         )
