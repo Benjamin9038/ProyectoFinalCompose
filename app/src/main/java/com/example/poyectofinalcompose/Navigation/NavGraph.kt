@@ -6,19 +6,22 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.poyectofinalcompose.ui.screens.*
+import com.example.poyectofinalcompose.ui.screens.PantallaGimnasios
 
 
  //Definición de las pantallas disponibles en la aplicación.
 open class Screen(val route: String) {
     object Login : Screen("login")
     object User : Screen("user")
-    object Pruebas : Screen("pruebas/{edad}/{genero}") {
+     object Pruebas : Screen("pruebas/{edad}/{genero}") {
         fun createRoute(edad: Int, genero: String) = "pruebas/$edad/$genero"
     }
     object Detalle : Screen("detalle/{pruebaId}/{edad}/{genero}") { // Pantalla de detalle de prueba
         fun createRoute(pruebaId: String, edad: Int, genero: String) = "detalle/$pruebaId/$edad/$genero"
     }
-}
+     object Gym : Screen("gimnasios")
+
+ }
 
 
  //Configuración de la navegación entre las pantallas de la aplicación.
@@ -38,12 +41,9 @@ fun NavGraph(navController: NavHostController, isDarkTheme: Boolean, onThemeChan
 
         // Pantalla de datos del usuario
         composable(Screen.User.route) {
-            UserScreen { edadIngresada, generoIngresado ->
-                edad = edadIngresada
-                genero = generoIngresado
-                navController.navigate(Screen.Pruebas.createRoute(edad, genero))
-            }
+            UserScreen(navController)
         }
+
 
         // Pantalla de pruebas según edad y género
         composable(Screen.Pruebas.route) { backStackEntry ->
@@ -80,6 +80,10 @@ fun NavGraph(navController: NavHostController, isDarkTheme: Boolean, onThemeChan
             val edad = backStackEntry.arguments?.getString("edad")?.toIntOrNull() ?: 0
             val genero = backStackEntry.arguments?.getString("genero") ?: "Masculino"
             DetalleScreen(pruebaId, navController, edad, genero)
+        }
+
+        composable(Screen.Gym.route) {
+            PantallaGimnasios(navController)
         }
     }
 }

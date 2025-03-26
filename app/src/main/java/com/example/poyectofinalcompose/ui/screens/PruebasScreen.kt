@@ -24,6 +24,9 @@ import com.example.poyectofinalcompose.Data.Model.Prueba
 import com.example.poyectofinalcompose.Data.Repository.PruebaRepository
 import com.example.poyectofinalcompose.Baremos.Baremos
 import com.example.poyectofinalcompose.Navigation.Screen
+import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.tooling.preview.Preview
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -159,3 +162,5 @@ fun PruebaItem(prueba: Prueba, navController: NavController, edad: Int, genero: 
         }
     }
 }
+
+

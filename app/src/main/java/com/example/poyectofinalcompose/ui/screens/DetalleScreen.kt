@@ -87,7 +87,6 @@ fun DetalleScreen(pruebaId: String, navController: NavController, edad: Int, gen
                     if (resultadoNum != null && prueba != null) {
                         val nombreLimpio = prueba.nombre.trim().lowercase().replace("''", "") // Limpieza del nombre
                         val generoLimpio = genero.trim().replaceFirstChar { it.uppercaseChar() } // Normalización del género
-
                         // DEPURACIÓN: Mostrar valores en Logcat
                         println("  Calculando nota para:")
                         println(" - Prueba: '$nombreLimpio'")
